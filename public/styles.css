@@ -1,0 +1,25 @@
+
+
+body {
+    min-height: 100vh;
+}
+
+#content{
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    height: 100%;
+}
+
+#editor{
+
+    font-size: 13pt;
+    font-family: monospace;
+    font-weight: bold;
+    color: lightgreen;
+    background-color:black;
+    padding: 1em;
+
+    height: 100%;
+    width: 50em;
+}
