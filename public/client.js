@@ -43,6 +43,11 @@ var app = new Vue({
         keyPress(event){
             this.keyPressed = event.key;
             this.prevPosition = event.srcElement.selectionStart;
+
+            // Character replacements
+            if(this.keyPressed === "Enter"){
+                this.keyPressed = "\n";
+            }
         },
         editorChanged(event){
             const target = event.srcElement;
@@ -50,10 +55,12 @@ var app = new Vue({
 
             // Handle special-case keys:
             if(this.keyPressed === "Backspace"){
-                console.log("BACKSPACE!!!!!!!!");
+                const firstBucket = this.buckets[cursor];
+                const nextBucket = this.buckets[this.prevPosition].next;
+                firstBucket.next = nextBucket;
 
+                this.buckets.splice(cursor+1,1);
             }else if(this.keyPressed === "Delete"){
-                console.log("DELETE!!!!!!!!");
                 const currBucket = this.buckets[cursor];
                 currBucket.next = currBucket.next.next;
                 this.buckets.splice(cursor+1,1);
