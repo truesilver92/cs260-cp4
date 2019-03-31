@@ -50,7 +50,11 @@ var app = new Vue({
             }
         },
         delete(bucket) {
-
+            try {
+                const res = axios.delete('/api/' + bucket.gid);
+            } catch(e) {
+                console.log(e);
+            }
         },
         update(prev, newb) {
             try {
@@ -71,14 +75,17 @@ var app = new Vue({
             // Handle special-case keys:
             if(this.keyPressed === "Backspace"){
                 const firstBucket = this.buckets[cursor];
-                const nextBucket = this.buckets[this.prevPosition].next;
+                const killedBucket = this.buckets[this.prevPosition];
+                const nextBucket = killedBucket.next;
                 firstBucket.next = nextBucket;
-
                 this.buckets.splice(cursor+1,1);
+                this.delete(killedBucket);
             }else if(this.keyPressed === "Delete"){
                 const currBucket = this.buckets[cursor];
+                const killedBucket = currBucket.next;
                 currBucket.next = currBucket.next.next;
                 this.buckets.splice(cursor+1,1);
+                this.delete(killedBucket);
             }else{
                 const prevBucket = this.buckets[this.prevPosition];
                 const nextBucket = prevBucket.next;

@@ -16,9 +16,16 @@ app.get('/stuff', (req, res) => {
     res.sendStatus(200);
 });
 
-app.post('/api/', async (req, res) => {
+app.post('/api', async (req, res) => {
     doc.push(req.body);
-    console.log(doc);
+    console.log(req.body);
+    return res.sendStatus(200);
+});
+
+app.delete('/api/:gid', async (req, res) => {
+    const gid = parseInt(req.params.gid);
+    doc.push({gid});
+    console.log('delete: ' + gid);
     return res.sendStatus(200);
 });
 
