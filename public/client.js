@@ -1,4 +1,3 @@
-
 var app = new Vue({
     el: '#content',
     data: {
@@ -8,6 +7,7 @@ var app = new Vue({
         prevPosition: 0,
         buckets: null,
         onEdit: 0,
+        remoteEdit: 0,
     },
     created() {
         this.initBuckets();
@@ -21,18 +21,26 @@ var app = new Vue({
                 return ll_crawler(text + b.content, b.next);
             };
             const ll_text = ll_crawler('', this.buckets[0]);
-            console.log("array: "+arr_text);
-            console.log("linkedList: "+ll_text);
+        },
+        remoteEdit() {
+            this.text = _.reduce(this.buckets, (txt, bucket) => {
+                return txt + bucket.content;
+            }, '');
         },
     },
     methods: {
-        initBuckets(){
+        async initBuckets(){
             this.buckets = new Array();
-            const bucket0 = {gid:this.guidGen(), content:'', next:null};
-            //const bucket1 = {gid:this.guidGen(), content:'', next:null};
-            //bucket0.next = bucket1;
+            const bucket0 = {gid:0, content:'', next:null};
             this.buckets.push(bucket0);
-            //this.buckets.push(bucket1);
+
+            const change_list = await axios.get('/api');
+            _.map(change_list, (change) => {
+                if(change.delete !== undefined)
+                    this.recv_delete(change);
+                else
+                    this.recv_update(change);
+            });
         },
         makeBucket(character){
             return {gid:this.guidGen(), content: character, next:null};
@@ -49,14 +57,14 @@ var app = new Vue({
                 this.keyPressed = "\n";
             }
         },
-        delete(bucket) {
+        send_delete(bucket) {
             try {
                 const res = axios.delete('/api/' + bucket.gid);
             } catch(e) {
                 console.log(e);
             }
         },
-        update(prev, newb) {
+        send_update(prev, newb) {
             try {
                 const res = axios.post('/api', {
                     prev: prev.gid,
@@ -67,6 +75,46 @@ var app = new Vue({
             } catch(e) {
                 console.log(e);
             }
+        },
+        recv_delete(change) {
+            let prev = this.buckets[0];
+            let index = 0;
+            this.buckets.forEach((bucket, i) => {
+                if(bucket.gid !== change.delete) {
+                    prev = bucket;
+                    return;
+                }
+                prev.next = bucket.next;
+                index = i;
+            });
+            if(index === 0)
+                return;
+            this.buckets.splice(index, 1);
+            this.remoteEdit++;
+        },
+        recv_update(change) {
+            let prev = this.buckets[0];
+            let next = null;
+            let index = 0;
+            this.buckets.forEach((bucket, i) => {
+                if(bucket.gid === change.prev) {
+                    prev = bucket;
+                    index = i;
+                    return;
+                }
+                if(bucket.gid === change.next) {
+                    next = bucket;
+                    return;
+                }
+            });
+            const newb = {
+                'gid': change.gid,
+                'content': change.content,
+                next,
+            };
+            prev.next = newb;
+            this.buckets.splice(index+1, 0, newb);
+            this.remoteEdit++;
         },
         editorChanged(event){
             const target = event.srcElement;
@@ -79,13 +127,13 @@ var app = new Vue({
                 const nextBucket = killedBucket.next;
                 firstBucket.next = nextBucket;
                 this.buckets.splice(cursor+1,1);
-                this.delete(killedBucket);
+                this.send_delete(killedBucket);
             }else if(this.keyPressed === "Delete"){
                 const currBucket = this.buckets[cursor];
                 const killedBucket = currBucket.next;
                 currBucket.next = currBucket.next.next;
                 this.buckets.splice(cursor+1,1);
-                this.delete(killedBucket);
+                this.send_delete(killedBucket);
             }else{
                 const prevBucket = this.buckets[this.prevPosition];
                 const nextBucket = prevBucket.next;
@@ -93,11 +141,9 @@ var app = new Vue({
                 this.buckets.splice(cursor, 0, newBucket);
                 prevBucket.next = newBucket;
                 newBucket.next = nextBucket;
-                console.log(newBucket);
-                this.update(prevBucket, newBucket);
+                this.send_update(prevBucket, newBucket);
             }
             this.prevPosition = cursor;
-            console.log(this.buckets);
             this.onEdit++;
         },
     }

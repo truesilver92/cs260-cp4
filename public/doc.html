@@ -5,13 +5,14 @@
 </head>
 <body>
 
-    <h1>Choose a note to edit</h1>
+    <h1>Make a Note, eh!</h1>
     <div id="content">
-      <a href="/doc.html">Turing Test</a>
+        <textarea id="editor" v-model="text" @keydown="keyPress" @input="editorChanged">{{text}}</textarea>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.18.0/axios.min.js" integrity="sha256-mpnrJ5DpEZZkwkE1ZgkEQQJW/46CSEh/STrZKOB/qoM=" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.6.7/vue.js" integrity="sha256-g+Q8DFAmG5+eyRPSydX0LY4TfjsL11XSDrIGerbbEdA=" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.11/lodash.min.js" integrity="sha256-7/yoZS3548fXSRXqc/xYzjsmuW3sFKzuvOCHd06Pmps=" crossorigin="anonymous"></script>
     <script src="/client.js"></script>
 </body>
 </html>
