@@ -49,6 +49,21 @@ var app = new Vue({
                 this.keyPressed = "\n";
             }
         },
+        delete(bucket) {
+
+        },
+        update(prev, newb) {
+            try {
+                const res = axios.post('/api', {
+                    prev: prev.gid,
+                    gid: newb.gid,
+                    content: newb.content,
+                    next: newb.next === null? null:newb.next.gid
+                });
+            } catch(e) {
+                console.log(e);
+            }
+        },
         editorChanged(event){
             const target = event.srcElement;
             const cursor = target.selectionStart;
@@ -71,6 +86,8 @@ var app = new Vue({
                 this.buckets.splice(cursor, 0, newBucket);
                 prevBucket.next = newBucket;
                 newBucket.next = nextBucket;
+                console.log(newBucket);
+                this.update(prevBucket, newBucket);
             }
             this.prevPosition = cursor;
             console.log(this.buckets);
