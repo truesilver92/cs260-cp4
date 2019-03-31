@@ -7,7 +7,7 @@
 
     <h1>Make a Note, eh!</h1>
     <div id="content">
-        <textarea id="editor" v-model="text" @keydown="keyPress" @input="editorChanged">{{text}}</textarea>
+        <textarea id="editor" @keydown="keyPress" v-model="text" @input="editorChanged">{{text}}</textarea>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.18.0/axios.min.js" integrity="sha256-mpnrJ5DpEZZkwkE1ZgkEQQJW/46CSEh/STrZKOB/qoM=" crossorigin="anonymous"></script>

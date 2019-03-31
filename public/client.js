@@ -1,6 +1,8 @@
+const editor =  document.getElementById('editor');
 var app = new Vue({
     el: '#content',
     data: {
+        editor: document.getElementById('editor'),
         text: "",
         textLength: 0,
         keyPressed: "",
@@ -11,6 +13,21 @@ var app = new Vue({
     },
     created() {
         this.initBuckets();
+        console.log("Refreshing textbox");
+        
+        setInterval( async () => {
+            try {
+                const queue = await axios.get('/api/diff');
+                _.map(queue.data, (change) => {
+                    if(change.delete !== undefined)
+                        this.recv_delete(change);
+                    else
+                        this.recv_update(change);
+                });
+            } catch(e) {
+                console.error(e);
+            }
+        }, 500);
     },
     watch: {
         onEdit(){
@@ -22,10 +39,21 @@ var app = new Vue({
             };
             const ll_text = ll_crawler('', this.buckets[0]);
         },
+        
         remoteEdit() {
+            const cursorPos = editor.selectionStart;
+            console.log("old postion: "+cursorPos);
+            
             this.text = _.reduce(this.buckets, (txt, bucket) => {
                 return txt + bucket.content;
             }, '');
+
+            console.log("remote edit: "+this.text);
+            
+            console.log("Updating cursor to position "+cursorPos);
+            editor.selectionStart = cursorPos;
+            editor.selectionEnd = editor.selectionStart;
+            
         },
     },
     methods: {
@@ -35,7 +63,8 @@ var app = new Vue({
             this.buckets.push(bucket0);
 
             const change_list = await axios.get('/api');
-            _.map(change_list, (change) => {
+            console.log(change_list);
+            _.map(change_list.data, (change) => {
                 if(change.delete !== undefined)
                     this.recv_delete(change);
                 else
@@ -50,7 +79,10 @@ var app = new Vue({
         },
         keyPress(event){
             this.keyPressed = event.key;
+            //this.keyPressed = String.fromCharCode(event.keyCode);
             this.prevPosition = event.srcElement.selectionStart;
+
+            console.log(event);
 
             // Character replacements
             if(this.keyPressed === "Enter"){
@@ -90,6 +122,8 @@ var app = new Vue({
             if(index === 0)
                 return;
             this.buckets.splice(index, 1);
+
+            // Run remoteEdit() to redraw the editor.
             this.remoteEdit++;
         },
         recv_update(change) {
@@ -114,6 +148,8 @@ var app = new Vue({
             };
             prev.next = newb;
             this.buckets.splice(index+1, 0, newb);
+
+            // Run remoteEdit() to redraw the editor.
             this.remoteEdit++;
         },
         editorChanged(event){
@@ -144,6 +180,8 @@ var app = new Vue({
                 this.send_update(prevBucket, newBucket);
             }
             this.prevPosition = cursor;
+
+            // Run onEdit() to redraw the editor.
             this.onEdit++;
         },
     }

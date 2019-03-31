@@ -24,7 +24,6 @@ const pushQueues = (pusher_token, content) => {
 const cookieParser = require("cookie-parser");
 app.use(cookieParser());
 app.use((req, res, next) => {
-    console.log('cookie monster eating a cookie?');
     const cookie = req.cookies.token;
     if(cookie === undefined) {
         // time to bake
@@ -50,10 +49,14 @@ app.delete('/api/:gid', async (req, res) => {
     return res.sendStatus(200);
 });
 
-app.get('/api', async (req, res) => {
+app.get('/api/diff', async (req, res) => {
     const res_results = await res.send(sessions[req.cookies.token]);
     sessions[req.cookies.token] = [];
     return res_results;
+});
+
+app.get('/api', async (req, res) => {
+    return res.send(doc);
 });
 
 app.listen(3000, () => console.log('Server listening on port 3000!'));
