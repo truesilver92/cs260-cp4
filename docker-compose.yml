@@ -22,6 +22,7 @@ services:
       - ./server:/app:rw
       - ./public:/public:ro
     command: sh -c "cd /app/; yarn; yarn start"
+    restart: on-failure
   db:
     image: mongo:4
     expose:
