@@ -38,7 +38,7 @@ app.use((req, res, next) => {
         // time to bake
         const token = Math.random().toString();
         res.cookie('token', token, {maxAge: 900000, httpOnly: true});
-        sessions[token] = [...doc];
+        sessions[token] = [...doc.change_list];
     }
     next();
 });
