@@ -1,0 +1,32 @@
+version: '3'
+services:
+  proxy:
+    image: jwilder/nginx-proxy:alpine
+    networks:
+      - nginx_proxy
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+  website:
+    image: node:11-alpine
+    networks:
+      - default
+      - nginx_proxy
+    expose:
+      - "3000"
+    environment:
+      - VIRTUAL_HOST=cp4.${HOST},cp4.localhost
+    volumes:
+      - ./server:/app:rw
+      - ./public:/public:ro
+    command: sh -c "cd /app/; yarn; yarn start"
+  db:
+    image: mongo:4
+    expose:
+      - "27017"
+
+networks:
+  nginx_proxy:
+    external: true
